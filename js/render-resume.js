@@ -332,6 +332,7 @@
     page.appendChild(article);
     container.appendChild(page);
     if (typeof RB.paginate === "function") RB.paginate(container);
+    if (typeof RB.refreshPreviewScale === "function") RB.refreshPreviewScale(container);
   }
 
   RB.renderResume = renderResume;

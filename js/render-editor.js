@@ -243,6 +243,74 @@
     return node;
   }
 
+  function gripIcon() {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.classList.add("editor-grip");
+    [[5, 3.5], [11, 3.5], [5, 8], [11, 8], [5, 12.5], [11, 12.5]].forEach(function (pair) {
+      var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dot.setAttribute("cx", String(pair[0]));
+      dot.setAttribute("cy", String(pair[1]));
+      dot.setAttribute("r", "1.2");
+      dot.setAttribute("fill", "currentColor");
+      svg.appendChild(dot);
+    });
+    return svg;
+  }
+
+  function refreshReorderLabels(rootNode, title) {
+    if (!rootNode) return;
+    var handle = rootNode.querySelector("[data-drag-handle]");
+    if (handle) handle.setAttribute("aria-label", "Reorder " + title);
+    var up = rootNode.querySelector("[data-move='up']");
+    if (up) up.setAttribute("aria-label", "Move " + title + " up");
+    var down = rootNode.querySelector("[data-move='down']");
+    if (down) down.setAttribute("aria-label", "Move " + title + " down");
+    var group = rootNode.querySelector(".editor-reorder");
+    if (group) group.setAttribute("aria-label", "Reorder " + title);
+  }
+
+  function buildReorderControls(section, index, total) {
+    var handle = button("editor-drag-handle", "");
+    handle.appendChild(gripIcon());
+    setAttrs(handle, {
+      "data-drag-handle": "true",
+      "data-section-id": section.id,
+      "data-section-type": section.type,
+      "aria-label": "Reorder " + section.title,
+      "aria-keyshortcuts": "ArrowUp ArrowDown",
+      title: "Drag to reorder. Arrow keys move this section."
+    });
+
+    var group = el("div", "editor-reorder");
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Reorder " + section.title);
+
+    var up = button("editor-button editor-move", "Up");
+    setAttrs(up, {
+      "data-move": "up",
+      "data-section-id": section.id,
+      "data-section-type": section.type,
+      "aria-label": "Move " + section.title + " up"
+    });
+    up.disabled = index <= 1;
+
+    var down = button("editor-button editor-move", "Down");
+    setAttrs(down, {
+      "data-move": "down",
+      "data-section-id": section.id,
+      "data-section-type": section.type,
+      "aria-label": "Move " + section.title + " down"
+    });
+    down.disabled = index >= total - 1;
+
+    group.appendChild(up);
+    group.appendChild(down);
+    return { handle: handle, group: group };
+  }
+
   function setAttrs(node, map) {
     Object.keys(map).forEach(function (key) {
       if (map[key] === undefined || map[key] === null) return;
@@ -719,7 +787,7 @@
     return article;
   }
 
-  function buildSection(section) {
+  function buildSection(section, index, total) {
     var sectionSpec = RB.getSectionSpec(section.type);
     var pinned = Boolean(sectionSpec && sectionSpec.pinned);
     var card = el("section", "editor-section");
@@ -738,14 +806,25 @@
       heading.textContent = section.title;
       var pin = el("span", "editor-pin");
       pin.textContent = "Pinned";
+      var locked = buildReorderControls(section, 0, total);
+      locked.handle.disabled = true;
+      locked.handle.setAttribute("aria-label", "Reorder " + section.title + ", unavailable");
+      locked.handle.removeAttribute("title");
+      Array.prototype.forEach.call(locked.group.querySelectorAll("button"), function (control) {
+        control.disabled = true;
+        var direction = control.getAttribute("data-move") === "up" ? "up" : "down";
+        control.setAttribute("aria-label", "Move " + section.title + " " + direction + ", unavailable");
+      });
+      head.appendChild(locked.handle);
       head.appendChild(heading);
+      head.appendChild(locked.group);
       head.appendChild(pin);
       card.setAttribute("aria-labelledby", titleId);
       card.appendChild(head);
 
       var body = el("div", "editor-section-body");
       var note = el("p", "editor-help");
-      note.textContent = "Always at the top of the resume. This section cannot be removed.";
+      note.textContent = "Always at the top of the resume. This section cannot be removed or moved.";
       body.appendChild(note);
       body.appendChild(buildGrid(section, null));
       card.appendChild(body);
@@ -754,6 +833,7 @@
 
     var open = sectionExpanded[section.id] !== false;
     var bodyId = domId(["body", section.id]);
+    var reorder = buildReorderControls(section, index, total);
     var toggle = button("editor-collapse", "");
     toggle.textContent = "";
     setAttrs(toggle, {
@@ -784,7 +864,9 @@
       "data-section-type": section.type,
       "aria-label": "Remove " + section.title + " section"
     });
+    head.appendChild(reorder.handle);
     head.appendChild(toggle);
+    head.appendChild(reorder.group);
     head.appendChild(remove);
     card.setAttribute("aria-labelledby", titleId);
     card.appendChild(head);
@@ -868,10 +950,13 @@
     status.setAttribute("role", "status");
     var note = el("p", "editor-help editor-intro");
     note.textContent = "Changes appear in the preview immediately. Blank entries and empty sections are left off the page.";
+    var orderNote = el("p", "editor-help editor-intro");
+    orderNote.textContent = "Drag a section by its handle, or use Move up and Move down. Personal information stays at the top.";
     form.appendChild(status);
     form.appendChild(note);
-    resume.sections.forEach(function (section) {
-      form.appendChild(buildSection(section));
+    form.appendChild(orderNote);
+    resume.sections.forEach(function (section, index) {
+      form.appendChild(buildSection(section, index, resume.sections.length));
     });
     form.appendChild(buildAddSection(resume));
     return form;
@@ -887,7 +972,9 @@
       listIndex: active.getAttribute("data-list-index"),
       sectionTitle: active.hasAttribute("data-section-title"),
       selectionStart: typeof active.selectionStart === "number" ? active.selectionStart : null,
-      selectionEnd: typeof active.selectionEnd === "number" ? active.selectionEnd : null
+      selectionEnd: typeof active.selectionEnd === "number" ? active.selectionEnd : null,
+      move: active.getAttribute("data-move"),
+      dragHandle: active.hasAttribute("data-drag-handle")
     };
   }
 
@@ -936,7 +1023,7 @@
         prefer: "add-entry"
       };
     }
-    if (previousFocus && (previousFocus.fieldKey || previousFocus.sectionTitle)) {
+    if (previousFocus && (previousFocus.fieldKey || previousFocus.sectionTitle || previousFocus.move || previousFocus.dragHandle)) {
       previousFocus.reason = "restore";
       return previousFocus;
     }
@@ -966,6 +1053,8 @@
     if (spec.listIndex !== undefined && spec.listIndex !== null &&
         node.getAttribute("data-list-index") !== String(spec.listIndex)) return false;
     if (spec.sectionTitle && !node.hasAttribute("data-section-title")) return false;
+    if (spec.dragHandle && !node.hasAttribute("data-drag-handle")) return false;
+    if (spec.move && node.getAttribute("data-move") !== spec.move) return false;
     if (spec.addEntry && !node.hasAttribute("data-add-entry")) return false;
     if (spec.addItem && !node.hasAttribute("data-add-item")) return false;
     return true;
@@ -1005,6 +1094,19 @@
     if (plan.prefer === "first-entry-field") {
       var entryRoot = findEntryRoot(container, plan.entryId);
       return entryRoot ? entryRoot.querySelector("input, textarea") : null;
+    }
+    if (plan.dragHandle) {
+      return findControl(container, { sectionId: plan.sectionId, dragHandle: true });
+    }
+    if (plan.move) {
+      var moveButton = findControl(container, { sectionId: plan.sectionId, move: plan.move });
+      if (moveButton && !moveButton.disabled) return moveButton;
+      var otherMove = findControl(container, {
+        sectionId: plan.sectionId,
+        move: plan.move === "up" ? "down" : "up"
+      });
+      if (otherMove && !otherMove.disabled) return otherMove;
+      return findControl(container, { sectionId: plan.sectionId, dragHandle: true });
     }
     if (plan.fieldKey) {
       return findControl(container, {
@@ -1080,6 +1182,7 @@
     if (header) header.textContent = trimmed;
     var remove = rootNode ? rootNode.querySelector("[data-remove-section]") : null;
     if (remove) remove.setAttribute("aria-label", "Remove " + trimmed + " section");
+    refreshReorderLabels(rootNode, trimmed);
     var sectionId = input.getAttribute("data-section-id");
     var section = findSection(boundState.getDocument(), sectionId);
     if (section && section.title === trimmed) return;
@@ -1182,10 +1285,45 @@
     return box;
   }
 
+  function requestMove(sectionId, spec) {
+    if (!boundState || !sectionId || !RB.moveSectionBy || !RB.moveSectionBefore) return;
+    if (document.body.classList.contains("is-section-dragging") && spec.offset) return;
+    var section = findSection(boundState.getDocument(), sectionId);
+    var title = section ? section.title : "Section";
+    var previousStatus = statusMessage;
+    nextFocus = {
+      reason: "restore",
+      sectionId: sectionId,
+      move: spec.offset ? (spec.offset < 0 ? "up" : "down") : null,
+      dragHandle: Boolean(spec.dragHandle) || !spec.offset
+    };
+    statusMessage = spec.offset
+      ? title + (spec.offset < 0 ? " moved up." : " moved down.")
+      : title + " moved.";
+    var result = spec.offset
+      ? RB.moveSectionBy(boundState, sectionId, spec.offset)
+      : RB.moveSectionBefore(boundState, sectionId, spec.beforeId);
+    if (result && result.ok && !result.unchanged) return;
+    nextFocus = null;
+    if (!result || result.ok) {
+      statusMessage = previousStatus;
+      return;
+    }
+    statusMessage = result.error || "Section could not be moved.";
+    if (boundRoot) writeStatus(boundRoot);
+  }
+
   function handleClick(event) {
     var target = event.target;
     var control = target && target.closest ? target.closest("button") : null;
     if (!control || !boundRoot || !boundRoot.contains(control) || !boundState) return;
+
+    if (control.hasAttribute("data-move")) {
+      requestMove(control.getAttribute("data-section-id"), {
+        offset: control.getAttribute("data-move") === "up" ? -1 : 1
+      });
+      return;
+    }
 
     if (control.hasAttribute("data-toggle-section")) {
       var sectionId = control.getAttribute("data-section-id");
@@ -1331,7 +1469,17 @@
   }
 
   function handleKeyDown(event) {
-    if (event.key !== "Escape" || !boundRoot) return;
+    if (!boundRoot) return;
+    var handle = event.target && event.target.closest ? event.target.closest("[data-drag-handle]") : null;
+    if (handle && boundRoot.contains(handle) && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+      event.preventDefault();
+      requestMove(handle.getAttribute("data-section-id"), {
+        offset: event.key === "ArrowUp" ? -1 : 1,
+        dragHandle: true
+      });
+      return;
+    }
+    if (event.key !== "Escape") return;
     var boxes = boundRoot.querySelectorAll(".editor-confirm");
     for (var index = boxes.length - 1; index >= 0; index -= 1) {
       if (boxes[index].hidden) continue;
@@ -1356,6 +1504,13 @@
     container.addEventListener("click", handleClick);
     container.addEventListener("focusout", handleBlur);
     container.addEventListener("keydown", handleKeyDown);
+    if (typeof RB.attachSectionDrag === "function") {
+      RB.attachSectionDrag(container, {
+        onDrop: function (sectionId, beforeId) {
+          requestMove(sectionId, { beforeId: beforeId });
+        }
+      });
+    }
   }
 
   function renderEditor(container, resume, state) {

@@ -749,8 +749,11 @@ button {
 }
 
 .preview-stage {
+  --preview-scale: 1;
   min-width: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   max-height: calc(100vh - 2rem);
   padding: 1.25rem;
   border-radius: 24px;
@@ -763,8 +766,34 @@ button {
   margin: 0 auto;
 }
 
-.sheet + .sheet {
+.sheet + .sheet,
+.sheet-frame + .sheet-frame {
   margin-top: 1.25rem;
+}
+
+.sheet-frame {
+  width: 100%;
+  min-width: 0;
+}
+
+.sheet-frame > .sheet-label {
+  width: var(--frame-width, 210mm);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.sheet-scaler {
+  margin-right: auto;
+  margin-left: auto;
+  overflow: hidden;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+}
+
+.sheet-scaler > .sheet {
+  width: 210mm;
+  margin: 0;
+  transform: scale(var(--preview-scale, 1));
+  transform-origin: top left;
 }
 
 .sheet-label {
@@ -834,6 +863,31 @@ button {
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
 }
 
+.sheet-scaler .page {
+  box-shadow: none;
+}
+
+.preview-stage.is-print-preview {
+  --preview-scale: 1;
+}
+
+.preview-stage.is-print-preview .sheet-frame,
+.preview-stage.is-print-preview .sheet-scaler,
+.preview-stage.is-print-preview .sheet,
+.preview-stage.is-print-preview .page {
+  width: 210mm !important;
+  height: auto !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+
+.preview-stage.is-print-preview .page {
+  height: 297mm !important;
+}
+
 .workspace[data-view="preview"] .preview-stage {
   position: static;
   max-height: none;
@@ -860,6 +914,7 @@ a:focus-visible {
 }
 
 .editor-form {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -898,8 +953,89 @@ a:focus-visible {
 
 .editor-section-head {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.55rem;
+}
+
+.editor-drag-handle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.editor-drag-handle:hover,
+.editor-drag-handle:focus-visible {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
+
+.editor-drag-handle:disabled,
+.editor-drag-handle:disabled:hover {
+  opacity: 0.4;
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.editor-grip {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+  pointer-events: none;
+}
+
+.editor-reorder {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.editor-move {
+  min-width: 2.75rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  text-align: center;
+}
+
+.editor-section.is-dragging {
+  opacity: 0.5;
+  border-color: rgba(255, 105, 95, 0.75);
+}
+
+body.is-section-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+body.is-section-dragging .editor-drag-handle {
+  cursor: grabbing;
+}
+
+.editor-drop-line {
+  position: absolute;
+  right: 0.2rem;
+  left: 0.2rem;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--coral);
+  box-shadow: 0 0 0 4px rgba(255, 105, 95, 0.18);
+  pointer-events: none;
+  z-index: 3;
 }
 
 .editor-section-heading,
@@ -1094,6 +1230,17 @@ a:focus-visible {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.editor-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.editor-button:disabled:hover,
+.editor-button:disabled:focus-visible {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .editor-button-primary {
   border-color: transparent;
   background: var(--coral);
@@ -1276,8 +1423,36 @@ a:focus-visible {
 
   .sheet,
   .sheet + .sheet,
+  .sheet-frame,
+  .sheet-frame + .sheet-frame,
+  .sheet-scaler,
   .preview-stage .page {
+    max-height: none !important;
     margin: 0 !important;
-    box-shadow: none;
+    overflow: visible !important;
+    box-shadow: none !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+
+  .preview-stage {
+    --preview-scale: 1 !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  .sheet-frame,
+  .sheet-scaler,
+  .sheet-scaler > .sheet,
+  .preview-stage .page {
+    width: 210mm !important;
+  }
+
+  .sheet-frame,
+  .sheet-scaler {
+    height: auto !important;
+  }
+
+  .preview-stage .page {
+    height: 297mm !important;
   }
 }

@@ -97,7 +97,10 @@
       var heading = document.getElementById(headings[view]);
       if (heading) heading.focus({ preventScroll: true });
     }
-    root.requestAnimationFrame(updatePages);
+    root.requestAnimationFrame(function () {
+      updatePages();
+      if (typeof RB.refreshPreviewScale === "function") RB.refreshPreviewScale();
+    });
   }
 
   var printDialog = document.getElementById("print-dialog");
