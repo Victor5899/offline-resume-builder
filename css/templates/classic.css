@@ -1,0 +1,21 @@
+.resume[data-template="classic"] .resume-header {
+  text-align: center;
+}
+
+.resume[data-template="classic"] .contact-list {
+  justify-content: center;
+}
+
+.resume[data-template="classic"] .section-title {
+  padding-bottom: 0.5mm;
+  border-bottom: 0.25mm solid #1a1a1a;
+  font-size: 10pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resume[data-template="classic"] .entry-secondary,
+.resume[data-template="classic"] .entry-meta {
+  color: #1a1a1a;
+}
