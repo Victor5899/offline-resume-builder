@@ -13,8 +13,10 @@
   var state = RB.createState(RB.createSampleResume());
 
   state.subscribe(function (resume) {
-    RB.renderDocumentOutline(editorRoot, resume);
+    var previewScroll = previewRoot.scrollTop;
+    RB.renderEditor(editorRoot, resume, state);
     RB.renderResume(previewRoot, resume);
+    previewRoot.scrollTop = previewScroll;
   });
 
   RB.state = state;

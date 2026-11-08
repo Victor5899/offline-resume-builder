@@ -1,5 +1,6 @@
 .page {
   width: 210mm;
+  max-width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
   padding: 10mm 12mm;
@@ -13,6 +14,7 @@
   font-size: 9.5pt;
   line-height: 1.28;
   color: #1a1a1a;
+  overflow-wrap: anywhere;
 }
 
 .resume-header {
@@ -42,6 +44,8 @@
 
 .contact-list li {
   display: inline;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .contact-list li:not(:last-child)::after {
@@ -77,13 +81,16 @@
 
 .entry-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
   gap: 4mm;
 }
 
 .entry-titles {
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 .entry-primary,
@@ -95,13 +102,23 @@
   margin: 0;
 }
 
+.entry-primary,
+.entry-secondary,
+.resume-name,
+.resume-headline {
+  overflow-wrap: anywhere;
+}
+
 .entry-primary {
   font-weight: 700;
 }
 
 .entry-meta {
-  flex: 0 0 auto;
-  white-space: nowrap;
+  flex: 0 1 auto;
+  max-width: 100%;
+  white-space: normal;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .entry-details,
@@ -123,8 +140,14 @@
 }
 
 .summary-text,
+.entry-details {
+  white-space: pre-wrap;
+}
+
+.summary-text,
 .entry-details,
 .skill-row,
+.highlights li,
 .resume a {
   overflow-wrap: anywhere;
 }

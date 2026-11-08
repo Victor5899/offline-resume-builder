@@ -42,13 +42,21 @@
   }
 
   function entryHead(primary, secondary, meta) {
+    if (!primary && !secondary && !meta) return null;
     var head = el("div", "entry-head");
-    var titles = el("div", "entry-titles");
-    if (primary) titles.appendChild(el("p", "entry-primary", primary));
-    if (secondary) titles.appendChild(el("p", "entry-secondary", secondary));
-    head.appendChild(titles);
+    if (primary || secondary) {
+      var titles = el("div", "entry-titles");
+      if (primary) titles.appendChild(el("p", "entry-primary", primary));
+      if (secondary) titles.appendChild(el("p", "entry-secondary", secondary));
+      head.appendChild(titles);
+    }
     if (meta) head.appendChild(el("p", "entry-meta", meta));
     return head;
+  }
+
+  function appendHead(block, primary, secondary, meta) {
+    var head = entryHead(primary, secondary, meta);
+    if (head) block.appendChild(head);
   }
 
   function bulletList(items) {
@@ -99,9 +107,11 @@
       ["LinkedIn", fields.linkedin],
       ["GitHub", fields.github]
     ].forEach(function (pair) {
-      if (!safeHref(pair[1])) return;
+      var text = clean(pair[1]);
+      if (!text) return;
       var holder = el("span");
-      appendTextLink(holder, pair[1], pair[0]);
+      if (safeHref(text)) appendTextLink(holder, text, pair[0]);
+      else holder.textContent = text;
       addContact(holder);
     });
 
@@ -120,10 +130,12 @@
       var credential = clean(entry.credential);
       var institution = clean(entry.institution);
       var place = [institution, clean(entry.location)].filter(Boolean).join(", ");
-      if (!credential && !place && !clean(entry.details)) return null;
+      var when = dateRange(clean(entry.start), clean(entry.end));
+      var details = clean(entry.details);
+      if (!credential && !place && !when && !details) return null;
       var block = el("article", "entry");
-      block.appendChild(entryHead(credential, place, dateRange(clean(entry.start), clean(entry.end))));
-      if (clean(entry.details)) block.appendChild(el("p", "entry-details", clean(entry.details)));
+      appendHead(block, credential, place, when);
+      if (details) block.appendChild(el("p", "entry-details", details));
       return block;
     });
   }
@@ -144,10 +156,11 @@
   function renderRole(entry) {
     var role = clean(entry.role);
     var organization = [clean(entry.organization), clean(entry.location)].filter(Boolean).join(", ");
+    var when = dateRange(clean(entry.start), clean(entry.end));
     var highlights = bulletList(entry.highlights || []);
-    if (!role && !organization && !highlights) return null;
+    if (!role && !organization && !highlights && !when) return null;
     var block = el("article", "entry");
-    block.appendChild(entryHead(role, organization, dateRange(clean(entry.start), clean(entry.end))));
+    appendHead(block, role, organization, when);
     if (highlights) block.appendChild(highlights);
     return block;
   }
@@ -160,19 +173,20 @@
     return section.entries.map(function (entry) {
       var name = clean(entry.name);
       var technologies = clean(entry.technologies);
+      var url = clean(entry.url);
       var highlights = bulletList(entry.highlights || []);
-      if (!name && !technologies && !highlights && !safeHref(entry.url)) return null;
+      if (!name && !technologies && !highlights && !url) return null;
       var block = el("article", "entry");
       var head = el("div", "entry-head");
       var titles = el("div", "entry-titles");
       if (name) titles.appendChild(el("p", "entry-primary", name));
-      if (safeHref(entry.url)) {
+      if (url) {
         var linkLine = el("p", "entry-secondary");
-        appendTextLink(linkLine, entry.url, displayUrl(clean(entry.url)));
+        appendTextLink(linkLine, entry.url, displayUrl(url));
         titles.appendChild(linkLine);
       }
-      head.appendChild(titles);
-      block.appendChild(head);
+      if (titles.childElementCount) head.appendChild(titles);
+      if (head.childElementCount) block.appendChild(head);
       if (technologies) block.appendChild(el("p", "entry-details", technologies));
       if (highlights) block.appendChild(highlights);
       return block;
@@ -183,12 +197,14 @@
     return section.entries.map(function (entry) {
       var name = clean(entry.name);
       var issuer = clean(entry.issuer);
-      if (!name && !issuer) return null;
+      var date = clean(entry.date);
+      var url = clean(entry.url);
+      if (!name && !issuer && !date && !url) return null;
       var block = el("article", "entry");
-      block.appendChild(entryHead(name, issuer, clean(entry.date)));
-      if (safeHref(entry.url)) {
+      appendHead(block, name, issuer, date);
+      if (url) {
         var linkLine = el("p", "entry-details");
-        appendTextLink(linkLine, entry.url, displayUrl(clean(entry.url)));
+        appendTextLink(linkLine, entry.url, displayUrl(url));
         block.appendChild(linkLine);
       }
       return block;
