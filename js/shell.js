@@ -51,12 +51,9 @@
   var lastPageCount = 1;
 
   function pageCount() {
-    var page = document.querySelector("#preview-root .page");
-    if (!page) return lastPageCount;
-    var height = page.getBoundingClientRect().height;
-    if (!height) return lastPageCount;
-    var a4Height = 297 * 96 / 25.4;
-    lastPageCount = Math.max(1, Math.ceil(height / a4Height - 0.02));
+    var pages = document.querySelectorAll("#preview-root .page");
+    if (!pages.length) return lastPageCount;
+    lastPageCount = pages.length;
     return lastPageCount;
   }
 
@@ -103,8 +100,21 @@
     root.requestAnimationFrame(updatePages);
   }
 
+  var printDialog = document.getElementById("print-dialog");
+
   function exportPdf() {
-    root.print();
+    if (!printDialog || typeof printDialog.showModal !== "function") {
+      root.print();
+      return;
+    }
+    if (printDialog.open) return;
+    printDialog.showModal();
+  }
+
+  if (printDialog) {
+    printDialog.addEventListener("close", function () {
+      if (printDialog.returnValue === "confirm") root.print();
+    });
   }
 
   navButtons.forEach(function (button) {
@@ -126,7 +136,9 @@
   templateCards.forEach(function (card) {
     card.addEventListener("click", function () {
       if (card.disabled) return;
-      RB.state.setTemplate(card.getAttribute("data-template-choice"));
+      var choice = card.getAttribute("data-template-choice");
+      if (RB.state.getDocument().template === choice) return;
+      RB.state.setTemplate(choice);
     });
   });
 

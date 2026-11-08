@@ -74,7 +74,7 @@
           </div>
         </div>
         <p class="overview-saved" id="overview-saved">Not saved on this device</p>
-        <p class="overview-note">Page count follows the current preview height.</p>
+        <p class="overview-note">Page count is the number of A4 pages. For PDF, choose A4, set margins to None, and enable background graphics.</p>
         <button type="button" class="button-primary" data-export="pdf">Export PDF</button>
       </aside>
     </section>
@@ -126,35 +126,43 @@
 
       <section class="templates-panel" aria-labelledby="templates-heading">
         <h2 id="templates-heading" tabindex="-1">Templates</h2>
-        <p class="panel-note">Classic is available now. Modern and Creative join in a later phase.</p>
+        <p class="panel-note">Choose a layout. Switching templates keeps the same resume content.</p>
         <div class="template-grid">
-          <button type="button" class="template-card" data-template-choice="classic" aria-pressed="true">
+          <button type="button" class="template-card is-selected" data-template-choice="classic" aria-pressed="true">
             <span class="mini-sheet mini-classic" aria-hidden="true">
-              <span></span><span></span><span class="short"></span><span></span><span class="short"></span>
+              <span class="mini-name"></span>
+              <span></span><span class="short"></span><span></span><span class="short"></span>
             </span>
             <span class="template-card-name">Classic</span>
             <span class="template-card-status">Single column, ATS-friendly</span>
+            <span class="template-card-badge" aria-hidden="true">Selected</span>
           </button>
-          <button type="button" class="template-card" data-template-choice="modern" disabled>
+          <button type="button" class="template-card" data-template-choice="modern" aria-pressed="false">
             <span class="mini-sheet mini-modern" aria-hidden="true">
-              <span></span><span></span><span class="short"></span><span></span><span class="short"></span>
+              <span class="mini-name"></span>
+              <span class="mini-rule"></span>
+              <span></span><span class="short"></span><span></span><span class="short"></span>
             </span>
             <span class="template-card-name">Modern</span>
-            <span class="template-card-status">Later phase</span>
+            <span class="template-card-status">Single column, refined</span>
+            <span class="template-card-badge" aria-hidden="true">Selected</span>
           </button>
-          <button type="button" class="template-card" data-template-choice="creative" disabled>
+          <button type="button" class="template-card" data-template-choice="creative" aria-pressed="false">
             <span class="mini-sheet mini-creative" aria-hidden="true">
+              <span class="mini-banner"></span>
               <span class="mini-side"></span>
               <span class="mini-main"><span></span><span></span><span class="short"></span></span>
             </span>
             <span class="template-card-name">Creative</span>
-            <span class="template-card-status">Later phase</span>
+            <span class="template-card-status">Two columns, sidebar</span>
+            <span class="template-card-badge" aria-hidden="true">Selected</span>
           </button>
         </div>
       </section>
 
       <section class="preview-panel" aria-labelledby="preview-heading">
         <h2 id="preview-heading" tabindex="-1">Preview</h2>
+        <p class="panel-note print-instruction">Print on A4 with margins set to None. Enable background graphics so template colors are kept.</p>
         <div id="preview-root" class="preview-stage"></div>
       </section>
 
@@ -163,11 +171,20 @@
         <div class="settings-card">
           <p>This page opens from the file on your computer. It does not use an account or a network service.</p>
           <p>The resume stays in memory for this visit. Saving on this device, and JSON download or loading, arrive in a later phase.</p>
-          <p>Export PDF opens the browser print dialog and prints the resume page.</p>
+          <p>Export PDF opens the browser print dialog and prints only the resume pages. Choose A4 paper, set margins to None, and turn on Background graphics so colors are kept. The resume text stays selectable.</p>
         </div>
       </section>
     </div>
   </div>
+
+  <dialog class="print-dialog" id="print-dialog" aria-labelledby="print-dialog-title">
+    <h2 id="print-dialog-title">Export PDF</h2>
+    <p>Choose A4 paper. Set margins to None so the pages stay exact. Turn on Background graphics when the template uses color. Then choose Save as PDF. The resume text stays selectable.</p>
+    <form method="dialog">
+      <button type="submit" class="button-quiet" value="cancel">Cancel</button>
+      <button type="submit" class="button-primary" value="confirm">Continue</button>
+    </form>
+  </dialog>
 
   <!-- Scripts run in dependency order. Keep this list aligned with the architecture plan. -->
   <script src="js/schema.js" defer></script>

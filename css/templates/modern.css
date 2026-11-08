@@ -1,1 +1,109 @@
-/* Modern template rules arrive in a later phase. */
+.resume[data-template="modern"] {
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.32;
+  color: #1c2834;
+}
+
+.resume[data-template="modern"] .resume-header {
+  margin: 0 0 1.5mm;
+  padding-bottom: 2.6mm;
+  border-bottom: 0.55mm solid #16325c;
+}
+
+.resume[data-template="modern"] .resume-name {
+  color: #16325c;
+  font-size: 21pt;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.resume[data-template="modern"] .resume-headline {
+  margin-top: 1.3mm;
+  color: #2f6392;
+  font-size: 11pt;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.resume[data-template="modern"] .contact-list {
+  justify-content: flex-start;
+  margin-top: 2.4mm;
+  color: #3e5164;
+  font-size: 9pt;
+}
+
+.resume[data-template="modern"] .resume-section {
+  margin-top: 3.2mm;
+}
+
+.resume[data-template="modern"] .section-title {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  margin: 0 0 1.3mm;
+  padding-bottom: 0.7mm;
+  border-bottom: 0.25mm solid #d5e1ec;
+  color: #16325c;
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.resume[data-template="modern"] .section-title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 2.2mm;
+  height: 2.2mm;
+  background: #3e7cb1;
+}
+
+.resume[data-template="modern"] .entry + .entry,
+.resume[data-template="modern"] .skill-row + .skill-row {
+  margin-top: 1.6mm;
+}
+
+.resume[data-template="modern"] .entry-head {
+  align-items: baseline;
+  column-gap: 5mm;
+}
+
+.resume[data-template="modern"] .entry-primary {
+  color: #16325c;
+  font-weight: 700;
+}
+
+.resume[data-template="modern"] .entry-secondary {
+  margin-top: 0.25mm;
+  color: #3e5164;
+}
+
+.resume[data-template="modern"] .entry-meta {
+  margin-left: auto;
+  color: #2f6392;
+  font-size: 8.75pt;
+  font-weight: 600;
+  text-align: right;
+}
+
+.resume[data-template="modern"] .entry-details,
+.resume[data-template="modern"] .summary-text,
+.resume[data-template="modern"] .skill-row,
+.resume[data-template="modern"] .highlights {
+  color: #1c2834;
+}
+
+.resume[data-template="modern"] .skill-category {
+  color: #16325c;
+}
+
+.resume[data-template="modern"] a {
+  color: #1d4e89;
+}
+
+.resume[data-template="modern"] a:focus-visible {
+  outline-color: #16325c;
+}

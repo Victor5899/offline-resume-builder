@@ -80,13 +80,15 @@
     parent.appendChild(section);
   }
 
-  function renderPersonal(section) {
-    var fields = section.fields;
+  function renderIdentity(section) {
+    var fields = section && section.fields ? section.fields : {};
     var header = el("header", "resume-header");
-    var name = clean(fields.fullName) || "Untitled resume";
-    header.appendChild(el("h1", "resume-name", name));
+    header.appendChild(el("h1", "resume-name", clean(fields.fullName) || "Untitled resume"));
     if (clean(fields.headline)) header.appendChild(el("p", "resume-headline", clean(fields.headline)));
+    return header;
+  }
 
+  function renderContactList(fields) {
     var contacts = el("ul", "contact-list");
     function addContact(node) {
       if (!node) return;
@@ -115,8 +117,24 @@
       addContact(holder);
     });
 
-    if (contacts.childElementCount) header.appendChild(contacts);
+    return contacts.childElementCount ? contacts : null;
+  }
+
+  function renderPersonal(section) {
+    var header = renderIdentity(section);
+    var contacts = renderContactList(section.fields);
+    if (contacts) header.appendChild(contacts);
     return header;
+  }
+
+  function renderContactSection(section) {
+    if (!section) return null;
+    var contacts = renderContactList(section.fields);
+    if (!contacts) return null;
+    var block = el("section", "resume-section");
+    block.appendChild(el("h2", "section-title", "Contact"));
+    block.appendChild(contacts);
+    return block;
   }
 
   function renderSummary(section) {
@@ -248,27 +266,72 @@
     additional: renderAdditional
   };
 
-  function renderResume(container, resume) {
-    if (!container) return;
-    container.replaceChildren();
+  var CREATIVE_SIDEBAR = {
+    skills: true,
+    education: true,
+    certifications: true,
+    additional: true
+  };
 
-    var page = el("div", "page");
-    var article = el("article", "resume");
-    article.setAttribute("data-template", "classic");
-    article.setAttribute("aria-label", "Classic resume preview");
+  function renderBlocks(section) {
+    var renderSection = SECTION_RENDERERS[section.type];
+    return renderSection ? renderSection(section) : [];
+  }
 
-    resume.sections.forEach(function (section) {
+  function renderSingleColumn(article, sections) {
+    sections.forEach(function (section) {
       if (section.type === "personal") {
         article.appendChild(renderPersonal(section));
         return;
       }
-      var renderSection = SECTION_RENDERERS[section.type];
-      if (!renderSection) return;
-      appendSection(article, section.title, renderSection(section));
+      appendSection(article, section.title, renderBlocks(section));
     });
+  }
+
+  function renderCreative(article, sections) {
+    var personal = null;
+    sections.forEach(function (section) {
+      if (section.type === "personal") personal = section;
+    });
+
+    article.appendChild(renderIdentity(personal));
+
+    var columns = el("div", "resume-columns");
+    var sidebar = el("aside", "resume-sidebar");
+    sidebar.setAttribute("aria-label", "Contact, skills, and education");
+    var main = el("div", "resume-main");
+
+    sections.forEach(function (section) {
+      if (section.type === "personal") {
+        var contact = renderContactSection(personal);
+        if (contact) sidebar.appendChild(contact);
+        return;
+      }
+      var column = CREATIVE_SIDEBAR[section.type] ? sidebar : main;
+      appendSection(column, section.title, renderBlocks(section));
+    });
+
+    columns.appendChild(sidebar);
+    columns.appendChild(main);
+    article.appendChild(columns);
+  }
+
+  function renderResume(container, resume) {
+    if (!container) return;
+    container.replaceChildren();
+
+    var template = resume && RB.isTemplateId(resume.template) ? resume.template : "classic";
+    var page = el("div", template === "creative" ? "page page-creative" : "page");
+    var article = el("article", "resume");
+    article.setAttribute("data-template", template);
+    article.setAttribute("aria-label", RB.templateLabel(template) + " resume preview");
+
+    if (template === "creative") renderCreative(article, resume.sections);
+    else renderSingleColumn(article, resume.sections);
 
     page.appendChild(article);
     container.appendChild(page);
+    if (typeof RB.paginate === "function") RB.paginate(container);
   }
 
   RB.renderResume = renderResume;
