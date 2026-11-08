@@ -2,7 +2,10 @@
   "use strict";
 
   var RB = root.ResumeBuilder = root.ResumeBuilder || {};
-  var BLOCKED_KEYS = { __proto__: true, prototype: true, constructor: true };
+
+  function isBlockedKey(key) {
+    return key === "__proto__" || key === "prototype" || key === "constructor";
+  }
 
   function clone(value) {
     if (Array.isArray(value)) {
@@ -11,7 +14,7 @@
     if (value && typeof value === "object") {
       var copy = {};
       Object.keys(value).forEach(function (key) {
-        if (BLOCKED_KEYS[key]) return;
+        if (isBlockedKey(key)) return;
         copy[key] = clone(value[key]);
       });
       return copy;
@@ -54,91 +57,9 @@
     return typeof value === "string";
   }
 
-  function checkFieldsObject(sectionSpec, fields) {
-    if (!fields || typeof fields !== "object" || Array.isArray(fields)) {
-      return "Section " + sectionSpec.type + " needs a fields object";
-    }
-    var known = {};
-    var missing = sectionSpec.fields.some(function (fieldSpec) {
-      known[fieldSpec.key] = true;
-      return !Object.prototype.hasOwnProperty.call(fields, fieldSpec.key) ||
-        !fieldKindMatches(fieldSpec, fields[fieldSpec.key]);
-    });
-    if (missing) return "Section " + sectionSpec.type + " has missing or invalid fields";
-    var unknown = Object.keys(fields).some(function (key) {
-      return !known[key];
-    });
-    if (unknown) return "Section " + sectionSpec.type + " has an unknown field";
-    return "";
-  }
-
-  function checkEntry(sectionSpec, entry, ids) {
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      return "An entry in " + sectionSpec.type + " is invalid";
-    }
-    if (typeof entry.id !== "string" || !entry.id) return "An entry is missing an id";
-    if (ids[entry.id]) return "Duplicate id: " + entry.id;
-    ids[entry.id] = true;
-
-    var known = { id: true };
-    var invalid = sectionSpec.fields.some(function (fieldSpec) {
-      known[fieldSpec.key] = true;
-      return !Object.prototype.hasOwnProperty.call(entry, fieldSpec.key) ||
-        !fieldKindMatches(fieldSpec, entry[fieldSpec.key]);
-    });
-    if (invalid) return "Entry " + entry.id + " has missing or invalid fields";
-    var unknown = Object.keys(entry).some(function (key) {
-      return !known[key];
-    });
-    if (unknown) return "Entry " + entry.id + " has an unknown field";
-    return "";
-  }
-
   function checkDocument(document) {
-    if (!document || typeof document !== "object" || Array.isArray(document)) {
-      return fail("Resume document must be an object");
-    }
-    if (document.version !== RB.DOCUMENT_VERSION) {
-      return fail("Resume version is not supported");
-    }
-    if (!RB.isTemplateId(document.template)) return fail("Unknown template");
-    if (!Array.isArray(document.sections) || document.sections.length === 0) {
-      return fail("Resume needs at least the personal section");
-    }
-
-    var seenTypes = {};
-    var seenIds = {};
-    for (var index = 0; index < document.sections.length; index += 1) {
-      var section = document.sections[index];
-      if (!section || typeof section !== "object") return fail("A section is invalid");
-      var sectionSpec = RB.getSectionSpec(section.type);
-      if (!sectionSpec) return fail("Unknown section type");
-      if (seenTypes[section.type]) return fail("Duplicate section: " + section.type);
-      seenTypes[section.type] = true;
-      if (typeof section.id !== "string" || !section.id) return fail("A section is missing an id");
-      if (seenIds[section.id]) return fail("Duplicate id: " + section.id);
-      seenIds[section.id] = true;
-      if (typeof section.title !== "string" || !section.title.trim()) {
-        return fail("Section " + section.type + " needs a title");
-      }
-      if (index === 0 && section.type !== "personal") {
-        return fail("Personal information stays first");
-      }
-      if (sectionSpec.kind === "fields") {
-        var fieldError = checkFieldsObject(sectionSpec, section.fields);
-        if (fieldError) return fail(fieldError);
-      } else if (!Array.isArray(section.entries)) {
-        return fail("Section " + section.type + " needs entries");
-      } else {
-        for (var entryIndex = 0; entryIndex < section.entries.length; entryIndex += 1) {
-          var entryError = checkEntry(sectionSpec, section.entries[entryIndex], seenIds);
-          if (entryError) return fail(entryError);
-        }
-      }
-    }
-
-    if (!seenTypes.personal) return fail("Personal information is required");
-    return ok();
+    if (typeof RB.validateDocument !== "function") return fail("Resume document could not be checked");
+    return RB.validateDocument(document);
   }
 
   function findSection(document, sectionId) {
@@ -172,7 +93,7 @@
     var next = {};
     for (var index = 0; index < keys.length; index += 1) {
       var key = keys[index];
-      if (BLOCKED_KEYS[key] || !known[key]) return fail("Unknown field: " + key);
+      if (isBlockedKey(key) || !known[key]) return fail("Unknown field: " + key);
       var value = partial[key];
       if (!fieldKindMatches(known[key], value)) {
         return fail(known[key].label + " has an invalid value");
@@ -184,9 +105,9 @@
 
   function createState(initialDocument) {
     var source = initialDocument || RB.createEmptyDocument();
-    var document = clone(source);
-    var initialCheck = checkDocument(document);
+    var initialCheck = checkDocument(source);
     if (!initialCheck.ok) throw new Error(initialCheck.error);
+    var document = clone(source);
 
     var listeners = [];
 
@@ -325,7 +246,7 @@
       if (orderedIds.length !== currentIds.length || orderedIds[0] !== currentIds[0]) {
         return fail("Personal information stays first");
       }
-      var seen = {};
+      var seen = Object.create(null);
       for (var index = 0; index < orderedIds.length; index += 1) {
         var id = orderedIds[index];
         if (seen[id] || currentIds.indexOf(id) === -1) {
@@ -333,7 +254,7 @@
         }
         seen[id] = true;
       }
-      var byId = {};
+      var byId = Object.create(null);
       document.sections.forEach(function (section) {
         byId[section.id] = section;
       });
@@ -352,10 +273,9 @@
     }
 
     function replaceDocument(nextDocument) {
-      var copy = clone(nextDocument);
-      var check = checkDocument(copy);
+      var check = checkDocument(nextDocument);
       if (!check.ok) return check;
-      document = copy;
+      document = clone(nextDocument);
       notify();
       return ok();
     }

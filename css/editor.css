@@ -385,12 +385,74 @@ button {
   font-size: 0.92rem;
 }
 
+.overview-saved[data-save-state="failed"] {
+  color: #ffd0cb;
+}
+
+.overview-notice,
+.settings-feedback {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.overview-notice[hidden],
+.settings-feedback[hidden] {
+  display: none;
+}
+
+.overview-notice.is-error,
+.settings-feedback.is-error {
+  color: #ffd0cb;
+}
+
+.overview-notice.is-success,
+.settings-feedback.is-success {
+  color: #e7efe4;
+}
+
 .overview-note {
   margin-top: 0.3rem;
 }
 
-.overview-card .button-primary {
+.overview-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
   margin-top: 1rem;
+}
+
+.overview-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 1rem;
+}
+
+.settings-saved {
+  margin: 0.9rem 0 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
 }
 
 .feature-strip {
@@ -1397,6 +1459,7 @@ body.is-section-dragging .editor-drag-handle {
   .print-instruction,
   .sheet-label,
   .print-dialog,
+  .file-input,
   .paginate-sandbox {
     display: none !important;
   }

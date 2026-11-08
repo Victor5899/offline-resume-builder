@@ -73,9 +73,16 @@
             <p class="overview-value" id="overview-pages">—</p>
           </div>
         </div>
-        <p class="overview-saved" id="overview-saved">Not saved on this device</p>
+        <p class="overview-saved" id="overview-saved" role="status" aria-live="polite">Not saved on this device</p>
+        <p class="overview-notice" id="overview-notice" hidden></p>
         <p class="overview-note">Page count is the number of A4 pages. For PDF, choose A4, set margins to None, and enable background graphics.</p>
-        <button type="button" class="button-primary" data-export="pdf">Export PDF</button>
+        <div class="overview-actions">
+          <button type="button" class="button-primary" data-export="pdf">Export PDF</button>
+          <div class="overview-file-actions">
+            <button type="button" class="button-quiet" data-export="json">Download JSON</button>
+            <button type="button" class="button-quiet" data-import="json">Load JSON</button>
+          </div>
+        </div>
       </aside>
     </section>
 
@@ -170,12 +177,30 @@
         <h2 id="settings-heading" tabindex="-1">Settings</h2>
         <div class="settings-card">
           <p>This page opens from the file on your computer. It does not use an account or a network service.</p>
-          <p>The resume stays in memory for this visit. Saving on this device, and JSON download or loading, arrive in a later phase.</p>
+          <p>Edits are saved in this browser. Download JSON keeps a copy you can move to another computer. Load JSON replaces the resume on screen after the file is checked.</p>
+          <p class="settings-saved" id="settings-saved">Not saved on this device.</p>
+          <p class="settings-feedback" id="settings-feedback" role="status" hidden></p>
+          <div class="settings-actions">
+            <button type="button" class="editor-button editor-button-primary" data-export="json">Download JSON</button>
+            <button type="button" class="editor-button" data-import="json">Load JSON</button>
+            <button type="button" class="editor-button editor-button-danger" data-clear-storage>Clear saved data</button>
+          </div>
           <p>Export PDF opens the browser print dialog and prints only the resume pages. Choose A4 paper, set margins to None, and turn on Background graphics so colors are kept. The resume text stays selectable.</p>
         </div>
       </section>
     </div>
   </div>
+
+  <dialog class="print-dialog" id="confirm-dialog" aria-labelledby="confirm-dialog-title">
+    <h2 id="confirm-dialog-title">Confirm</h2>
+    <p id="confirm-dialog-copy"></p>
+    <form method="dialog">
+      <button type="submit" class="button-quiet" id="confirm-dialog-cancel" value="cancel">Cancel</button>
+      <button type="submit" class="button-primary" id="confirm-dialog-accept" value="confirm">Continue</button>
+    </form>
+  </dialog>
+
+  <input id="resume-file" class="file-input" type="file" accept="application/json,.json" tabindex="-1">
 
   <dialog class="print-dialog" id="print-dialog" aria-labelledby="print-dialog-title">
     <h2 id="print-dialog-title">Export PDF</h2>
