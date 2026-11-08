@@ -807,7 +807,7 @@
     });
   }
 
-  function paginateLinear(container, sandbox, article, template) {
+  function paginateLinear(sandbox, article, template) {
     var header = article.querySelector(":scope > .resume-header");
     var flow = readSections(article);
     var headerState = header ? { node: header, done: false, intact: true, pi: 0 } : null;
@@ -816,7 +816,7 @@
     var guard = 0;
     while (guard < 400 && ((headerState && !headerState.done) || flow.si < flow.sections.length)) {
       guard += 1;
-      var built = mount(container, createLinearPage(template), false);
+      var built = mount(sandbox, createLinearPage(template), false);
       var before = cursorKey(headerState, flow);
       var headerOutcome = "done";
       if (headerState && !headerState.done) headerOutcome = placeHeader(built.column, headerState, ctx);
@@ -840,14 +840,14 @@
     }
     ctx.destroy();
     if (!pages.length) {
-      var blank = mount(container, createLinearPage(template), false);
+      var blank = mount(sandbox, createLinearPage(template), false);
       if (header) blank.column.appendChild(header);
       pages.push(blank.page);
     }
     return pages;
   }
 
-  function paginateCreative(container, sandbox, article) {
+  function paginateCreative(sandbox, article) {
     var header = article.querySelector(":scope > .resume-header");
     var side = readSections(article.querySelector(".resume-sidebar"));
     var main = readSections(article.querySelector(".resume-main"));
@@ -859,7 +859,7 @@
       guard += 1;
       pending = side.si < side.sections.length || main.si < main.sections.length;
       if (!pending) break;
-      var built = mount(container, createCreativePage(header, pages.length > 0), true);
+      var built = mount(sandbox, createCreativePage(header, pages.length > 0), true);
       var before = cursorKey(null, side) + "|" + cursorKey(null, main);
       fillColumn(built.sidebar, side, ctx, "side");
       fillColumn(built.main, main, ctx, "main");
@@ -874,9 +874,15 @@
     }
     ctx.destroy();
     if (!pages.length) {
-      pages.push(mount(container, createCreativePage(header, false), true).page);
+      pages.push(mount(sandbox, createCreativePage(header, false), true).page);
     }
     return pages;
+  }
+
+  function pageCanBeMeasured(page) {
+    if (!page) return false;
+    var rect = page.getBoundingClientRect();
+    return rect.width > 200 && rect.height > 200;
   }
 
   function paginate(container) {
@@ -889,17 +895,27 @@
     var sandbox = root.document.createElement("div");
     sandbox.className = "paginate-sandbox";
     sandbox.setAttribute("aria-hidden", "true");
-    container.appendChild(sandbox);
-    sandbox.appendChild(source);
-
-    var pages = template === "creative"
-      ? paginateCreative(container, sandbox, article)
-      : paginateLinear(container, sandbox, article, template);
-
-    sandbox.remove();
-    var sheets = finishPages(pages, template);
-    container.replaceChildren.apply(container, sheets);
-    return pages.length;
+    // Measure on the body. The preview panel is display:none on Settings, and a
+    // hidden ancestor reports every box as 0×0, which splits the resume into a
+    // page per character until the guard stops it.
+    var host = root.document.body || container;
+    host.appendChild(sandbox);
+    try {
+      sandbox.appendChild(source);
+      var pages;
+      if (!pageCanBeMeasured(source)) {
+        pages = [source];
+      } else {
+        pages = template === "creative"
+          ? paginateCreative(sandbox, article)
+          : paginateLinear(sandbox, article, template);
+      }
+      var sheets = finishPages(pages, template);
+      container.replaceChildren.apply(container, sheets);
+      return pages.length;
+    } finally {
+      if (sandbox.parentNode) sandbox.remove();
+    }
   }
 
   RB.paginate = paginate;

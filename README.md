@@ -1,211 +1,226 @@
 # Offline Resume Builder
 
-A browser application for writing a professional resume on your own device. It does not use an account, a backend, or an external API.
-
-[![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)](https://img.shields.io/badge/status-work%20in%20progress-orange)
-[![HTML5](https://img.shields.io/badge/HTML5-semantic-E34F26)](https://img.shields.io/badge/HTML5-semantic-E34F26)
-[![CSS3](https://img.shields.io/badge/CSS3-no%20framework-1572B6)](https://img.shields.io/badge/CSS3-no%20framework-1572B6)
-[![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E)](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E)
+A browser application for writing, previewing, and exporting a resume on your own computer. It does not use an account, a backend, or an external API.
 
 **BSERC GenAI Internship — Week 2, Project 3**
 
-The interface is in place and a sample resume renders in a Classic A4 preview. Editing, extra templates, file import and export, local autosave, and multi-page layout are still ahead.
-
 ## Overview
 
-Job applications often push people through hosted resume builders that require an account and upload the document to someone else's server. This project is a local alternative: open one HTML file, review a resume, and print it from the browser.
+Hosted resume builders ask for an account and upload the document. This one stays on the device. Open `index.html`, edit the ten resume sections, choose Classic, Modern, or Creative, and print an A4 PDF from the browser. The resume is real HTML text, so it can be selected in the PDF.
 
-The current build loads a complete fictional sample and shows it beside a read-only document outline. Resume data lives in memory for that visit. Nothing is uploaded, and the page does not call a remote service.
-
-It is aimed at students and early-career candidates who want a private draft, and at reviewers who need to see a small client-side application with a clear data model and a separate print stylesheet.
+The sample resume is fictional. It is there so the preview is useful before the first edit. After an edit, the browser saves the document locally and restores it on the next visit.
 
 ## Screenshots
 
-No screenshots are stored in this repository yet. These filenames are reserved for later captures. They are not linked, so the page does not show broken images.
+These files are in the repository and were captured from this build.
 
-```text
-assets/screenshots/phase-1-preview.png
-assets/screenshots/editor-preview.png
-assets/screenshots/templates-preview.png
-assets/screenshots/pdf-preview.png
-```
+![Home](assets/screenshots/home.png)
+
+The home view shows the sample resume summary: Classic, 10 of 10 sections, and 2 A4 pages.
+
+![Editor and preview](assets/screenshots/editor-preview.png)
+
+The editor and the Classic preview sit side by side. Personal information stays pinned at the top.
+
+![Templates](assets/screenshots/templates-preview.png)
+
+Classic, Modern, and Creative change the layout only. The resume data stays the same.
+
+![Narrow editor](assets/screenshots/editor-narrow.png)
+
+At 390px the editor stacks into one column. The fields remain readable.
+
+![Saved Classic PDF, page 1](assets/screenshots/pdf-classic-p1.png)
+
+This image is a raster of a PDF file saved by headless Chrome, not a screenshot of the on-screen preview.
+
+![Saved Creative PDF](assets/screenshots/pdf-creative-p1.png)
+
+The Creative PDF keeps the dark sidebar when background graphics are printed.
 
 ## Features
 
-### Implemented
-
-- Static application shell that opens from `index.html` with no build step and no network requirement.
-- In-memory resume document, with subscribers that redraw the outline and the preview.
-- Ten section types in the data model: personal information, summary, education, skills, experience, projects, certifications, achievements, positions of responsibility, and additional information.
-- A fictional sample resume that fills every section.
-- Read-only document outline. It is not an edit form.
-- Live Classic A4 preview. The preview element is fixed at 210mm by at least 297mm, and text is real DOM text.
-- Overview card bound to application state: selected template name, count of sections that contain text, page count estimated from the preview height, and the fixed status "Not saved on this device".
-- Navigation between Resume Editor, Templates, Preview, and Settings.
-- Template cards. Classic can be selected. Modern and Creative are disabled.
-- Export PDF buttons that call `window.print()`. Print CSS hides the dark interface and prints the white resume page.
-- Responsive shell: a side-by-side workspace on a wide window, and a stacked layout below 980px. On a narrow window the A4 page scrolls inside the preview pane.
-- Reduced-motion support for the background glow and view transitions.
-
-The state module can already update fields, add and remove entries, rename and move sections, replace the document, and reject an unknown template. Those operations are not connected to form controls yet.
-
-### Planned
-
-- A form for adding, editing, and deleting entries.
-- Modern and Creative templates that change the preview, not only the stored template name.
-- Drag-and-drop section reordering, with up and down controls.
-- JSON download and validated JSON import.
-- Automatic `localStorage` persistence.
-- Pagination that splits the resume into A4 pages before print, so the preview and the PDF use the same breaks.
-- Scaling the A4 preview to the pane width on small screens.
-
-Basic printing works today. Accurate multi-page PDF layout does not.
-
-## Design
-
-The application chrome uses a midnight navy field (`#071329`), a vertical pinstripe texture, a coral glow (`#FF695F`) with a cooler blue light, translucent glass panels, and a floating pill navigation. Type is set with system fonts: a sans-serif for the interface and Georgia for the resume.
-
-That theme stops at the page edge. The resume is a white, single-column Classic document. Print rules set the page background to white and remove the navigation, hero, editor, and feature strip.
+- Ten sections: personal information, professional summary, education, technical skills, work experience, projects, certifications, achievements, positions of responsibility, and additional information.
+- Add, edit, and delete entries. Empty entries and empty sections stay off the page.
+- Optional sections can be removed and added again. Personal information cannot be removed.
+- Classic, Modern, and Creative templates. Switching templates does not change the resume text.
+- Drag a section by its handle, or use Up and Down. Arrow keys move the focused handle. Personal information stays first.
+- The preview is packed into real A4 pages. The on-screen pages and the printed pages are the same DOM.
+- Preview pages scale down to fit a narrow pane. The page box stays 210mm by 297mm.
+- Export PDF opens the browser print dialog. The resume text is HTML, not a picture.
+- Download JSON and load a checked JSON file.
+- Autosave in `localStorage`, with a safe fallback when the saved value is corrupt or storage fails.
+- Works from the file on disk. No install step and no network request.
 
 ## Technology
 
-| Technology | Role in this repository |
+| Technology | Role |
 | --- | --- |
-| HTML5 | Semantic page structure in `index.html` |
-| CSS3 | Interface theme, A4 page, Classic template, print rules |
-| Vanilla JavaScript | Classic scripts, no bundler and no framework |
-| DOM APIs | Outline and preview built with `createElement` and `textContent` |
+| HTML5 | Page structure in `index.html` |
+| CSS3 | Dark glass interface, three resume templates, A4 page, print rules |
+| JavaScript | Classic scripts. No bundler, framework, or package manifest |
+| DOM | Editor and resume built with `createElement` and `textContent` |
+| `localStorage` | Autosave and restore |
+| `FileReader` | JSON import |
 | `window.print()` | PDF path through the browser print dialog |
-| `crypto.randomUUID()` | Identifiers for sections and entries created in code |
-| `matchMedia` | `prefers-reduced-motion` |
+| `crypto.randomUUID()` | New section and entry ids, with a fallback when UUID is unavailable |
 
-`localStorage`, `fetch`, and `FileReader` are not used. There is no package manifest and no build command.
+System fonts only: a sans-serif for the interface, Georgia for Classic, and Avenir Next or the next available sans-serif for Modern and Creative. Nothing is loaded from a CDN.
 
 ## Architecture
 
-One resume object is the source of truth. `main.js` creates it from the sample, then the outline renderer and the resume renderer subscribe to it. `shell.js` reads the same object for the overview card and switches views. User text is written with DOM text nodes.
+One resume object is the source of truth. Renderers and the shell subscribe to it. Listeners receive a frozen copy. User text is written with DOM text nodes, and links are created only for `http://`, `https://`, and `mailto:`.
 
 ```text
 resume-builder/
 ├── index.html
 ├── css/
-│   ├── editor.css                 Interface, layout, and print hiding
-│   ├── resume.css                 A4 page, resume type, and print page size
+│   ├── editor.css                 Interface, layout, dialogs, print hiding
+│   ├── resume.css                 A4 page, shared resume type, print page size
 │   └── templates/
-│       ├── classic.css            Classic heading and alignment rules
-│       ├── modern.css             Reserved
-│       └── creative.css           Reserved
+│       ├── classic.css
+│       ├── modern.css
+│       └── creative.css
 └── js/
     ├── schema.js                  Section catalog, factories, template ids
     ├── sample.js                  Demonstration resume
-    ├── validate.js                Reserved for import checks
-    ├── state.js                   Document, mutations, and subscribers
-    ├── storage.js                 Reserved for localStorage
-    ├── io.js                      Reserved for JSON download and file read
-    ├── render-editor.js           Read-only document outline
-    ├── render-resume.js           Classic preview DOM
-    ├── paginate.js                Reserved for A4 page packing
-    ├── dnd.js                     Reserved for section reordering
-    ├── preview-scale.js           Reserved for fitting the preview
-    ├── main.js                    Startup and subscriptions
-    └── shell.js                   Navigation, overview, and print
+    ├── validate.js                Document and import checks
+    ├── state.js                   Mutations and subscribers
+    ├── storage.js                 localStorage load, save, and autosave
+    ├── io.js                      JSON download and file read
+    ├── render-editor.js           Editor form
+    ├── render-resume.js           Resume DOM for all three templates
+    ├── paginate.js                A4 page packing
+    ├── dnd.js                     Drag, Up/Down, and keyboard reordering
+    ├── preview-scale.js           Fit the preview to the pane
+    ├── main.js                    Startup
+    └── shell.js                   Navigation, overview, import, and print
 ```
 
-Scripts are loaded with `defer` in that order. Reserved files keep the load order stable and do not add behavior yet.
+Scripts load with `defer` in that order.
 
 ## Getting started
 
-Replace `YOUR_USERNAME` with the GitHub account that hosts the repository.
-
 ```bash
-git clone https://github.com/YOUR_USERNAME/offline-resume-builder.git
+git clone https://github.com/Victor5899/offline-resume-builder.git
 cd offline-resume-builder
 ```
 
 Open `index.html` in a current desktop browser. A double-click is enough. No install step and no local server are required.
 
-The sample resume appears immediately. Use the pill navigation or the hero buttons to move between the editor, templates, preview, and settings.
+The sample resume appears when this browser has no saved resume. Use the pill navigation or the hero buttons to move between the editor, templates, preview, and settings.
 
 ## Usage
 
-| Action | What happens now |
+| Action | Result |
 | --- | --- |
-| Open the file | The sample resume loads in memory and both views render. |
-| Resume Editor | Shows the read-only outline and the Classic preview together. |
-| Templates | Shows three cards. Only Classic can be selected. |
-| Preview | Shows the A4 page without the outline. |
-| Settings | States that the page is local, that saving is not active, and that Export PDF uses the print dialog. |
-| Create Resume | Scrolls to the editor. It does not clear the sample. |
-| Preview Resume | Scrolls to the preview. |
-| Export PDF | Opens the browser print dialog. Choose Save as PDF there. |
+| Edit a field | The preview updates immediately. A valid change is saved on this device after a short pause. |
+| Add entry | Adds a blank entry and focuses its first field. A blank entry is left off the page. |
+| Delete entry | An empty entry is removed at once. An entry with text asks for confirmation. |
+| Remove section | Asks for confirmation, then removes that section. Add it again from the bottom of the editor. Its previous text is not kept. |
+| Up, Down, drag, or arrow keys | Moves that section. Personal information stays first. Focus returns to the control that moved it. |
+| Templates | Applies Classic, Modern, or Creative without changing the resume data. |
+| Download JSON | Saves `resume.json`, or `resume-` plus the name when the name contains letters or digits. |
+| Load JSON | Checks the file, then asks before replacing the resume on screen. Cancel keeps the current resume. |
+| Clear saved data | Removes the copy in this browser. The resume on screen stays. A refresh loads the sample until the next edit. |
+| Export PDF | Opens a short confirmation, then the browser print dialog. |
 
-In the print dialog, margins and background graphics follow the browser defaults. The stylesheet asks for an A4 page with no extra page margin. The resume text stays selectable because it is HTML, not a canvas image.
+### JSON import and export
 
-Refreshing the page loads the sample again. Edits made through the state API in the console are not stored.
+The file is a document with `version`, `template`, and `sections`. Version 1 is the only supported version. The template must be `classic`, `modern`, or `creative`.
 
-## Offline behavior and privacy
+Import rejects malformed JSON, a file over 1 MB, an unknown template, a duplicate id, a missing personal section, an unknown field, and the keys `__proto__`, `constructor`, and `prototype`. A rejected file does not change the resume on screen.
 
-The application files are local. Stylesheets and scripts use relative paths. The JavaScript does not call `fetch`, `XMLHttpRequest`, or `localStorage`.
+A website, LinkedIn, GitHub, project, or credential link must be blank or start with `http://` or `https://`. Other text in those fields is kept while you edit, and it is saved on this device, but a JSON file that contains it is rejected. The preview does not turn that text into a link.
 
-Resume content stays in the page until it is closed. The overview reports "Not saved on this device" because that is the current behavior.
+### PDF export
 
-The sample resume contains `https://example.com/...` links and a `mailto:` address. Those are document content. The application does not request them. A click follows the link only if you choose to.
+In the print dialog:
 
-Print uses the browser's own dialog. This project does not send the resume to a PDF service.
+1. Choose A4 paper.
+2. Set margins to None.
+3. Turn on background graphics so Modern and Creative colors are kept.
+4. Choose Save as PDF.
+
+The stylesheet asks for an A4 page with no extra margin. The app cannot set the dialog's paper size for you. Those three choices are what keep the saved file aligned with the preview.
+
+### Offline behavior and privacy
+
+Stylesheets and scripts use relative paths. The JavaScript does not call `fetch` or `XMLHttpRequest`. Opening the file does not contact a resume service.
+
+The sample contains `https://example.com/...` links and a `mailto:` address. Those are document content. The application does not request them.
+
+Saved resumes stay in this browser's `localStorage` under the key `resume-builder:v1`. Download JSON if you want a copy you can move to another computer.
 
 ## Testing
 
-There is no automated test suite in the repository.
+There is no automated test suite in the repository. The results below are from a temporary Node harness and headless Chrome during the Phase 7 audit on 8 November 2026. The harness is not part of the application. Counts are from that run, not from an earlier phase.
 
-During development, the JavaScript files were syntax-checked with Node's `node --check`. A temporary Node script, which is not committed, loaded `schema.js`, `sample.js`, and `state.js` and checked the sample shape, frozen snapshots, and state mutations such as rename, add and remove entry, move section, and rejected imports. `validate.js` was not part of that check because it has no validator yet.
+### Logic checks
 
-Manual checks in a desktop browser:
+Node loaded `schema.js`, `sample.js`, `validate.js`, `state.js`, `storage.js`, `io.js`, and `dnd.js` and ran 41 checks. All 41 passed.
 
-| Check | Result |
-| --- | --- |
-| Sample resume renders in the Classic preview | Passed |
-| Overview shows Classic, 10 of 10 completed sections, and "Not saved on this device" | Passed |
-| Page count follows the measured preview height | Passed for the current sample, which fits one A4 page |
-| Templates view disables Modern and Creative | Passed |
-| Print media hides the dark chrome and leaves a white page with dark resume text | Passed in emulated print media, not by saving a PDF file |
-| Wide layout uses two columns; a 390px-wide layout does not scroll the document sideways | Passed |
+They covered the sample document, edits in every repeatable section, empty entries, section removal and restoration, template changes that keep section data, rejected unknown templates, personal information staying first, unique ids, JSON round-trip, malformed JSON, duplicate ids, hostile keys, `javascript:` and `data:` URLs, the 1 MB limit, corrupt storage, quota and storage failures, autosave, cancelled autosave, and the absence of `fetch` and `innerHTML` in the scripts.
 
-These checks do not cover a form editor, JSON files, `localStorage`, drag-and-drop, or multi-page breaks. Those features are not built.
+`Object.prototype` was not polluted by the hostile JSON samples.
+
+### Browser checks
+
+Headless Chrome opened `file:///.../index.html`. A fresh profile was used. 53 browser checks were run in that session. 52 passed. One failed inside the harness, and a follow-up check explained it.
+
+Passed checks included:
+
+- The sample boots with Meera Iyer, Classic, 10 of 10 sections, and no console errors.
+- Chrome recorded no request to a remote host.
+- Classic and Modern sample previews are 2 pages. Creative is 1 page. Page boxes measured 794 by 1123 CSS pixels, which is 210mm by 297mm at 96 CSS pixels per inch.
+- Expected sample text was present. No inspected text box crossed its page edge. No page ended with a heading and nothing under it.
+- Keyboard ArrowUp, the Down button, and a pointer drag on the handle reordered sections and restored focus. Personal information stayed first and its controls stayed disabled.
+- Adding an entry left it off the preview until it had text. A long URL and a long bullet stayed inside the page. An `<img>` payload was rendered as text.
+- Invalid JSON left the current name in place. A valid export loaded back.
+- Autosave survived a reload. Corrupt storage loaded the sample and explained why. A thrown `localStorage.setItem` left the editor usable and showed "Save failed". Clear saved data removed the stored copy and kept the on-screen resume.
+- At 1440, 1280, 768, 390, and 320 CSS pixels, `documentElement.scrollWidth` did not exceed the viewport. The print dialog fit the viewport.
+- Editing while the Settings view hid the preview produced 2 pages, not hundreds, and those pages did not clip when Preview was opened.
+
+The failed harness check expected a visible outline immediately after `element.focus()`. In that headless session the element was active, but `:focus` styles were not applied. With Chrome's focus emulation enabled, the same heading computed as `rgb(255, 105, 95) solid 2px`.
+
+### Saved PDF checks
+
+These are files written by Chrome's `Page.printToPDF`, with A4 page size, zero margins, and background graphics. They are not emulated print-media screenshots. PDFKit read the text layer and the media box. Page rasters were taken from those files.
+
+| File | Pages | Media box | What the text layer contained |
+| --- | --- | --- | --- |
+| Sample, Classic | 2 | 594.96 × 841.92 pt | Both pages had text. Page 2 was the continued Additional information line, "Interests: Distance running, hand-lettering", under its heading. |
+| Sample, Modern | 2 | 594.96 × 841.92 pt | Page 2 contained Positions of responsibility and Additional information. |
+| Sample, Creative | 1 | 594.96 × 841.92 pt | The sample text, including the headline, education, and projects. |
+| Short Classic resume | 1 | 594.96 × 841.92 pt | Name, contact, and "One page summary." No second page. |
+| Longer Creative resume | 2 | 594.96 × 841.92 pt | Page 2 repeated the name banner and continued Work experience. The DOM clip check for that layout reported 0 overflowing boxes. |
+
+594.96 × 841.92 pt is the A4 media box Chrome writes for `@page { size: A4 }`. ISO A4 is 595.28 × 841.89 pt. The difference is under 0.4 pt.
+
+PDFKit returned strings from every page, so the files contain a text layer rather than a single page image. A mouse selection inside Preview was not performed. Modern and Creative headings use letter-spacing, and PDFKit's string for those headings inserts spaces between letters. The painted headings in the rasters read as normal words.
+
+## Known limitations
+
+- The print dialog's paper size, margins, and background graphics are the browser's settings. The page can only tell you what to choose.
+- At 320px the primary navigation scrolls inside its pill. Preview and Settings are reached by scrolling that pill. The page itself does not grow sideways.
+- A section that barely overflows can leave a short final page. The Classic sample does this: page 2 holds one continued line and its heading.
+- Creative continuation pages repeat the name banner.
+- A link that is not `http://`, `https://`, or blank can remain in the on-screen resume and in `localStorage`, but it cannot be imported from JSON until it is corrected. The preview shows it as text.
+- Clearing saved data does not reset the resume you are looking at.
+- Letter-spaced headings can extract from a PDF with spaces between the letters.
+- This audit did not include a physical trackpad drag or a click-drag selection inside the macOS Preview app.
 
 ## Roadmap
 
-- [x] Phase 1 — Application shell and basic Classic preview
-- [x] Design update — Dark glass interface
-- [ ] Phase 2 — Complete resume editor
-- [ ] Phase 3 — Modern and Creative templates
-- [ ] Phase 4 — A4 pagination and PDF layout
-- [ ] Phase 5 — Section reordering and preview scaling
-- [ ] Phase 6 — JSON import and export, and local persistence
-- [ ] Phase 7 — Requirement pass and bug fixes
+- [x] Phase 1 — Application shell and Classic preview
+- [x] Phase 2 — Resume editor
+- [x] Phase 3 — Modern and Creative templates
+- [x] Phase 4 — A4 pagination and PDF layout
+- [x] Phase 5 — Section reordering and preview scaling
+- [x] Phase 6 — JSON import and export, and local persistence
+- [x] Phase 7 — Audit fixes recorded in this file
 
-Phase 4 here means page breaking that matches print. A print button and print CSS already exist from the design update.
-
-## Possible later work
-
-These are not part of the current build:
-
-- A committed browser test for the state module.
-- Screenshot assets in `assets/screenshots/`.
-- A visible warning in the print dialog about margin and background settings.
-- A license file, once the author chooses one.
-
-## What the project demonstrates
-
-The current code demonstrates:
-
-- Semantic HTML and a stylesheet split between the application and the printable document.
-- DOM rendering without `innerHTML`.
-- A single document object, copied and frozen before listeners see it.
-- A section catalog that describes fields, including string lists.
-- Responsive layout and `prefers-reduced-motion`.
-- Print CSS that removes the interface from the printed page.
-
-Browser storage, file reading, and import validation are assigned to `storage.js`, `io.js`, and `validate.js`. Those files are placeholders.
+Phase 7 is waiting for review before the build is called release-ready.
 
 ## Acknowledgements
 

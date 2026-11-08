@@ -187,7 +187,8 @@
     page-break-after: always;
   }
 
-  .sheet:last-child .page {
+  .sheet-frame:last-child .page,
+  .preview-stage > .sheet:last-child .page {
     break-after: auto;
     page-break-after: auto;
   }

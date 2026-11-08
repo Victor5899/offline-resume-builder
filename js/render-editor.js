@@ -431,7 +431,7 @@
       return { invalid: true, text: "Enter an email like name@example.com." };
     }
     if (URL_KEYS[key] && !/^https?:\/\/\S+$/i.test(text)) {
-      return { invalid: true, text: "Use a full link starting with https://." };
+      return { invalid: true, text: "Use a full link starting with http:// or https://." };
     }
     return null;
   }
@@ -951,7 +951,7 @@
     var note = el("p", "editor-help editor-intro");
     note.textContent = "Changes appear in the preview immediately. Blank entries and empty sections are left off the page.";
     var orderNote = el("p", "editor-help editor-intro");
-    orderNote.textContent = "Drag a section by its handle, or use Move up and Move down. Personal information stays at the top.";
+    orderNote.textContent = "Drag a section by its handle, or use Up and Down. Personal information stays at the top.";
     form.appendChild(status);
     form.appendChild(note);
     form.appendChild(orderNote);

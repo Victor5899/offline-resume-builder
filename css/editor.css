@@ -308,8 +308,7 @@ button {
 .editor-panel,
 .templates-panel,
 .settings-card,
-.preview-stage,
-.outline-section {
+.preview-stage {
   border: 1px solid var(--line);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02) 30%, rgba(8, 20, 42, 0.18)),
@@ -331,9 +330,6 @@ button {
 .overview-saved,
 .overview-note,
 .panel-note,
-.outline-kicker,
-.outline-note,
-.outline dt,
 .template-card-status {
   color: var(--muted);
 }
@@ -357,8 +353,7 @@ button {
 .overview-label,
 .template-card-status,
 .overview-note,
-.panel-note,
-.outline-note {
+.panel-note {
   margin: 0;
   font-size: 0.78rem;
 }
@@ -563,7 +558,8 @@ button {
 .templates-panel h2:focus,
 .preview-panel h2:focus,
 .settings-panel h2:focus {
-  outline: none;
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
 }
 
 .editor-panel {
@@ -573,69 +569,6 @@ button {
   overflow: auto;
   position: sticky;
   top: 1rem;
-}
-
-.outline {
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-
-.outline-template {
-  margin: 0.15rem 0 0.75rem;
-  font-size: 1.35rem;
-  letter-spacing: -0.03em;
-}
-
-.outline-sections,
-.outline-entries {
-  margin: 0.4rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.outline-section {
-  padding: 0.85rem 0.9rem;
-  border-radius: 16px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.outline-section + .outline-section {
-  margin-top: 0.7rem;
-}
-
-.outline-section:hover {
-  border-color: rgba(255, 255, 255, 0.24);
-}
-
-.outline-section h3 {
-  margin: 0 0 0.45rem;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.outline dl {
-  margin: 0;
-}
-
-.outline dl div + div,
-.outline-entries li + li {
-  margin-top: 0.4rem;
-}
-
-.outline dt {
-  font-size: 0.75rem;
-}
-
-.outline dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.outline-entries > li {
-  padding-left: 0.7rem;
-  border-left: 2px solid rgba(255, 105, 95, 0.7);
 }
 
 .editor-panel input,
@@ -1428,7 +1361,6 @@ body.is-section-dragging .editor-drag-handle {
   .nav-pill button,
   .template-card,
   .icon-button,
-  .outline-section,
   .editor-section,
   .editor-chevron,
   .editor-button {
